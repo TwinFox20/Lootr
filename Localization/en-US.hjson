@@ -1,0 +1,28 @@
+Mods: {
+	Lootr: {
+		Configs: {
+			LootrConfig: {
+				DisplayName: Lootr Config
+				Headers.Main: Main
+
+				AllowRestore: {
+					Label: "[i:48] Allow Restore"
+					Tooltip:
+						'''
+						Restore items in a chest by timer,
+						if player looted whole chest.
+						'''
+				}
+
+				SecondsToRestore: {
+					Label: "[i:889] Seconds To Restore"
+					Tooltip:
+						'''
+						How many seconds should pass before
+						new items will appear in the chest.
+						'''
+				}
+			}
+		}
+	}
+}

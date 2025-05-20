@@ -1,0 +1,5 @@
+Inspired by the Minecraft mod of the same name, Lootr brings a fresh, multiplayer-friendly loot system to Terraria. Say goodbye to empty chests and loot stealing—Lootr ensures that every player gets their own unique rewards from chests and containers across the world.
+
+Whether you're exploring dungeons, raiding sky islands, or delving deep into the Underworld, every lootable container will generate separate loot for each player, creating a fair and balanced experience for multiplayer sessions. No more arguments over who gets the best gear—Lootr makes sure everyone gets their share.
+
+Perfect for co-op adventures, modpacks, or large servers, Lootr enhances the thrill of exploration and discovery in a seamless and intuitive way.
