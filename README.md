@@ -1,2 +1,15 @@
-# LootrMod
-Terraria Mod Inspired by Lootr for Minecraft
+# Terraria Lootr Mod
+
+### Say goodbye to empty chests and loot stealing!
+
+* Brings a fresh, multiplayer-friendly loot system to Terraria.
+* Ensures that every player gets their own unique rewards from chests and containers across the world.
+* Makes sure everyone gets their share.
+* Perfect for co-op adventures, modpacks, or large servers.
+* Work in a seamless and intuitive way.
+
+Whether you're exploring dungeons, raiding sky islands, or delving deep into the Underworld, every chest will generate loot for each player, creating a fair and balanced experience for multiplayer sessions.
+
+#### No more arguments over who gets the best gear!
+
+Inspired by [Lootr](https://www.curseforge.com/minecraft/mc-mods/lootr) mod for Minecraft.

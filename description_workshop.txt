@@ -1,4 +1,4 @@
-[h2]Say goodbye to empty chests and loot stealing! [/h2]
+[h3] Say goodbye to empty chests and loot stealing! [/h3]
 
 [list]
   [*]Brings a fresh, multiplayer-friendly loot system to Terraria.
@@ -10,6 +10,6 @@
 
 Whether you're exploring dungeons, raiding sky islands, or delving deep into the Underworld, every chest will generate loot for each player, creating a fair and balanced experience for multiplayer sessions.
 
-No more arguments over who gets the best gear!
+[h4] No more arguments over who gets the best gear! [/h4]
 
 Inspired by [url=www.curseforge.com/minecraft/mc-mods/lootr] Lootr [/url] mod for Minecraft.
