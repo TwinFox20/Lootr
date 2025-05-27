@@ -11,7 +11,7 @@ namespace LootrMod.DataStructures
 	{
 		public Item[] worldGenItems = [];
 		public Dictionary<int, Item[]> playerItems = [];
-		public Dictionary<int, ulong> playerRestoreTime = [];
+		public Dictionary<int, uint> playerRestoreTime = [];
 
 		public TagCompound Save()
 		{
@@ -22,13 +22,13 @@ namespace LootrMod.DataStructures
 				{
 					["player"] = pair.Key,
 					["items"] = LootrUtilities.WriteItems(pair.Value)
-				}),
+				}).ToList(),
 
 				["playerRestoreTime"] = playerRestoreTime.Select(pair => new TagCompound
 				{
 					["player"] = pair.Key,
 					["time"] = pair.Value
-				})
+				}).ToList()
 			};
 
 			return tag;
@@ -50,7 +50,7 @@ namespace LootrMod.DataStructures
 			foreach (var entry in tag.GetList<TagCompound>("playerRestoreTime"))
 			{
 				int player = entry.GetInt("player");
-				chest.playerRestoreTime[player] = entry.Get<ulong>("time");
+				chest.playerRestoreTime[player] = entry.Get<uint>("time");
 			}
 
 			return chest;
@@ -70,7 +70,7 @@ namespace LootrMod.DataStructures
 
 		private void TryRestorePlayerItems(int player)
 		{
-			bool shouldRestore = playerRestoreTime.TryGetValue(player, out ulong restoreTime) && restoreTime <= Main.GameUpdateCount;
+			bool shouldRestore = playerRestoreTime.TryGetValue(player, out uint restoreTime) && restoreTime <= Main.GameUpdateCount;
 
 			if (shouldRestore)
 				playerRestoreTime.Remove(player);
@@ -87,10 +87,10 @@ namespace LootrMod.DataStructures
 			if (playerRestoreTime.ContainsKey(player))
 				return;
 
-			if (playerItems[player].All(item => item.IsAir))
+			if (!playerItems[player].All(item => item.IsAir))
 				return;
 
-			playerRestoreTime[player] = Main.GameUpdateCount + (ulong)(LootrConfig.Instance.SecondsToRestore * 60);
+			playerRestoreTime[player] = Main.GameUpdateCount + (LootrConfig.Instance.SecondsToRestore * 60);
 		}
 	}
 }

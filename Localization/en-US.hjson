@@ -1,5 +1,10 @@
 Mods: {
-	Lootr: {
+	LootrMod: {
+		Keybinds: {
+			DisplayFields.DisplayName: Display Fields
+			CreateLootrChest.DisplayName: Create Lootr Chest
+		}
+
 		Configs: {
 			LootrConfig: {
 				DisplayName: Lootr Config

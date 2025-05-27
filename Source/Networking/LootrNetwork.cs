@@ -1,9 +1,10 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using LootrMod.DataStructures;
 using LootrMod.Systems;
 using LootrMod.Utilities;
-using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -22,9 +23,9 @@ namespace LootrMod.Networking
 		{
 			switch ((PacketType)reader.ReadByte())
 			{
-				case PacketType.DataSync:   HandleDataSync(reader, sender);   break;
-				case PacketType.ChestOpen:  HandleChestOpen(reader, sender);  break;
-				case PacketType.ChestClose: HandleChestClose(reader, sender); break;
+				case PacketType.DataSync:   HandleDataSync(reader, sender);   break; // Invoke -> Handle -> Return
+				case PacketType.ChestOpen:  HandleChestOpen(reader, sender);  break; // Invoke -> Handle -> Spread
+				case PacketType.ChestClose: HandleChestClose(reader, sender); break; // Invoke -> Handle -> Spread
 			}
 		}
 
@@ -32,19 +33,20 @@ namespace LootrMod.Networking
 		{
 			if (Main.netMode == NetmodeID.MultiplayerClient)
 			{
-				var p = CreatePacket(PacketType.DataSync, player);
+				var p = CreatePacket(PacketType.DataSync);
 				p.Send(-1, player);
 			}
 
-			if (Main.netMode == NetmodeID.Server)
+			if (Main.dedServ)
 			{
-				var p = CreatePacket(PacketType.DataSync, player);
+				var p = CreatePacket(PacketType.DataSync);
+				Console.WriteLine("LootrChestsCount: " + LootrSystem.lootrChests.Count);
 				p.Write((ushort)LootrSystem.lootrChests.Count);
 
 				foreach (var (position, lootrChest) in LootrSystem.lootrChests)
 				{
-					p.Write((short)position.X);
-					p.Write((short)position.Y);
+					p.Write((ushort)position.X);
+					p.Write((ushort)position.Y);
 					NetworkUtilities.WriteItems(p, lootrChest.worldGenItems);
 				}
 
@@ -66,22 +68,22 @@ namespace LootrMod.Networking
 			p.Send(-1, player);
 		}
 
-		private static void HandleDataSync(BinaryReader reader, int player)
+		private static void HandleDataSync(BinaryReader reader, int sender)
 		{
-			if (Main.netMode == NetmodeID.Server)
-				SendDataToPlayer(player);
+			if (Main.dedServ)
+				SendDataToPlayer(sender);
 
 			if (Main.netMode == NetmodeID.MultiplayerClient)
 			{
 				LootrSystem.lootrChests.Clear();
 
-				ushort chestCount = reader.ReadUInt16();
-				for (int i = 0; i < chestCount; i++)
+				var chestCount = reader.ReadUInt16();
+				for (ushort i = 0; i < chestCount; i++)
 				{
-					int x = reader.ReadInt16();
-					int y = reader.ReadInt16();
-					Item[] items = NetworkUtilities.ReadItems(reader);
-					LootrSystem.lootrChests[new Point(x, y)] = new LootrChest { worldGenItems = items };
+					var x = reader.ReadUInt16();
+					var y = reader.ReadUInt16();
+					var items = NetworkUtilities.ReadItems(reader);
+					LootrSystem.lootrChests[new Point16(x, y)] = new LootrChest { worldGenItems = items };
 				}
 			}
 		}
@@ -93,7 +95,7 @@ namespace LootrMod.Networking
 
 			int chestIndex = reader.ReadInt16();
 
-			if (Main.netMode == NetmodeID.Server)
+			if (Main.dedServ)
 				SendChestOpen(chestIndex, sender);
 
 			else if (LootrSystem.TryGetLootrChest(chestIndex, out var chest, out var lootrChest))
@@ -107,19 +109,25 @@ namespace LootrMod.Networking
 
 			int chestIndex = reader.ReadInt16();
 
-			if (Main.netMode == NetmodeID.Server)
+			if (Main.dedServ)
 				SendChestClose(chestIndex, sender);
 
 			else if (LootrSystem.TryGetLootrChest(chestIndex, out var chest, out var lootrChest))
 				lootrChest.SavePlayerItems(sender, chest.item);
 		}
 
-		private static ModPacket CreatePacket(PacketType type, int sender)
+		/// <summary>
+		/// Create a <see cref="ModPacket"/> to send
+		/// </summary>
+		/// <param name="type"></param>
+		/// <param name="sender">The original player who invoke the event</param>
+		/// <returns><see cref="ModPacket"/> with type(<see cref="byte"/>) and optional with sender(<see cref="byte"/>)</returns>
+		private static ModPacket CreatePacket(PacketType type, int sender = -1)
 		{
 			var packet = LootrMod.Instance.GetPacket();
 			packet.Write((byte)type);
 
-			if (Main.netMode == NetmodeID.Server)
+			if (Main.dedServ && sender != -1)
 				packet.Write((byte)sender);
 
 			return packet;

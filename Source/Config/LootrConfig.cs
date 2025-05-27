@@ -19,6 +19,6 @@ namespace LootrMod.Config
 		[BackgroundColor(0, 0, 0, 0)]
 		[Range(0, 86400)]
 		[DefaultValue(1200)]
-		public int SecondsToRestore;
+		public uint SecondsToRestore;
 	}
 }

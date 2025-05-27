@@ -8,7 +8,16 @@ namespace LootrMod
 	{
 		public static LootrMod Instance;
 
-		public override void Load() => Instance = this;
+		public static ModKeybind DisplayFieldsKeybind;
+		public static ModKeybind CreateLootrChestKeybind;
+
+		public override void Load()
+		{
+			Instance = this;
+
+			DisplayFieldsKeybind = KeybindLoader.RegisterKeybind(this, "DisplayFields", "I");
+			CreateLootrChestKeybind = KeybindLoader.RegisterKeybind(this, "CreateLootrChest", "L");
+		}
 
 		public override void Unload() => Instance = null;
 

@@ -9,7 +9,7 @@ namespace LootrMod.Utilities
 	{
 		public static void WriteItems(ModPacket p, Item[] items)
 		{
-			byte length = (byte)items.Length;
+			var length = (byte)items.Length;
 			p.Write(length);
 			for (byte i = 0; i < length; i++)
 				ItemIO.Send(items[i], p, true, false);
@@ -17,8 +17,8 @@ namespace LootrMod.Utilities
 
 		public static Item[] ReadItems(BinaryReader r)
 		{
-			byte length = r.ReadByte();
-			Item[] items = new Item[length];
+			var length = r.ReadByte();
+			var items = new Item[length];
 			for (byte i = 0; i < length; i++)
 				items[i] = ItemIO.Receive(r, true, false);
 			return items;

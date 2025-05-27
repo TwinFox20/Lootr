@@ -5,9 +5,10 @@
 
 	<!-- General -->
 	<PropertyGroup>
-		
+	  <Platforms>AnyCPU</Platforms>
+		<ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
 	</PropertyGroup>
-
+	
 	<!-- References -->
 	<ItemGroup>
 		

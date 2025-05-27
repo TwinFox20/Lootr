@@ -3,8 +3,8 @@ using System.Linq;
 using LootrMod.DataStructures;
 using LootrMod.Networking;
 using LootrMod.Utilities;
-using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 
@@ -12,7 +12,7 @@ namespace LootrMod.Systems
 {
 	public class LootrSystem : ModSystem
 	{
-		public static Dictionary<Point, LootrChest> lootrChests = [];
+		public static Dictionary<Point16, LootrChest> lootrChests = [];
 
 		public override void PostWorldGen()
 		{
@@ -43,7 +43,7 @@ namespace LootrMod.Systems
 
 			foreach (var chestTag in tag.GetList<TagCompound>("LootrChests"))
 			{
-				var position = chestTag.Get<Point>("position");
+				var position = chestTag.Get<Point16>("position");
 				lootrChests[position] = LootrChest.Load(chestTag);
 			}
 		}
@@ -53,30 +53,33 @@ namespace LootrMod.Systems
 			lootrChest = default;
 			chest = Main.chest[chestIndex];
 			if (chest == null) return false;
-			return lootrChests.TryGetValue(new Point(chest.x, chest.y), out lootrChest);
+			return lootrChests.TryGetValue(new Point16(chest.x, chest.y), out lootrChest);
 		}
 
 		public static void OnChestOpened(int chestIndex, int player)
 		{
-			if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest)) return;
+			if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest))
+				return;
 
-			LootrNetwork.SendChestOpen(chestIndex, player);
 			lootrChest.FillChestWithPlayerItems(player, chest);
+			LootrNetwork.SendChestOpen(chestIndex, player);
 		}
 
 		public static void OnChestClosed(int chestIndex, int player)
 		{
-			if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest)) return;
+			if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest))
+				return;
 
-			LootrNetwork.SendChestClose(chestIndex, player);
 			lootrChest.SavePlayerItems(player, chest.item);
+			LootrNetwork.SendChestClose(chestIndex, player);
 		}
 
 		private static void TryRegisterLootrChest(Chest chest)
 		{
-			if (chest.item.All(item => item.IsAir)) return;
+			if (chest.item.All(item => item.IsAir))
+				return;
 			
-			var position = new Point(chest.x, chest.y);
+			var position = new Point16(chest.x, chest.y);
 			lootrChests[position] = new LootrChest
 			{
 				worldGenItems = LootrUtilities.DeepCloneItems(chest.item)
