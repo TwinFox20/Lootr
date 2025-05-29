@@ -7,16 +7,16 @@ namespace LootrMod.Utilities;
 internal class LootrUtilities
 {
 	/// <summary>
-	/// Using <see cref="Item.Clone"/> on each item<br/>
-	/// Set <paramref name="compact"/> to false to clone items with <see cref="Item.IsAir"/> flag
+	/// Using <see cref="Item.Clone"/> on each item and remove air<br/>
+	/// Set <paramref name="compact"/> to false to fill with air
 	/// </summary>
 	/// <param name="items">Array </param>
 	/// <param name="compact">Flag whitch remove air items</param>
 	public static Item[] DeepCloneItems(IList<Item> items, bool compact = true)
 	{
-		int length = compact ? items.Count : 40;
+		var length = compact ? items.Count : 40;
 		var result = new List<Item>(length);
-		for (int i = 0; i < length; i++)
+		for (byte i = 0; i < length; i++)
 			if (i < items.Count && !items[i].IsAir)
 				result.Add(items[i].Clone());
 			else if (!compact)
