@@ -5,92 +5,91 @@ using LootrMod.Utilities;
 using Terraria;
 using Terraria.ModLoader.IO;
 
-namespace LootrMod.DataStructures
+namespace LootrMod.DataStructures;
+
+public class LootrChest
 {
-	public class LootrChest
+	public Item[] worldGenItems = [];
+	public Dictionary<int, Item[]> playerItems = [];
+	public Dictionary<int, uint> playerRestoreTime = [];
+
+	public TagCompound Save()
 	{
-		public Item[] worldGenItems = [];
-		public Dictionary<int, Item[]> playerItems = [];
-		public Dictionary<int, uint> playerRestoreTime = [];
-
-		public TagCompound Save()
+		var tag = new TagCompound
 		{
-			var tag = new TagCompound
+			["worldGenItems"] = LootrUtilities.WriteItems(worldGenItems),
+			["playerItems"] = playerItems.Select(pair => new TagCompound
 			{
-				["worldGenItems"] = LootrUtilities.WriteItems(worldGenItems),
-				["playerItems"] = playerItems.Select(pair => new TagCompound
-				{
-					["player"] = pair.Key,
-					["items"] = LootrUtilities.WriteItems(pair.Value)
-				}).ToList(),
+				["player"] = pair.Key,
+				["items"] = LootrUtilities.WriteItems(pair.Value)
+			}).ToList(),
 
-				["playerRestoreTime"] = playerRestoreTime.Select(pair => new TagCompound
-				{
-					["player"] = pair.Key,
-					["time"] = pair.Value
-				}).ToList()
-			};
-
-			return tag;
-		}
-
-		public static LootrChest Load(TagCompound tag)
-		{
-			var chest = new LootrChest
+			["playerRestoreTime"] = playerRestoreTime.Select(pair => new TagCompound
 			{
-				worldGenItems = LootrUtilities.ReadItems(tag.GetList<TagCompound>("worldGenItems"))
-			};
+				["player"] = pair.Key,
+				["time"] = pair.Value
+			}).ToList()
+		};
 
-			foreach (var entry in tag.GetList<TagCompound>("playerItems"))
-			{
-				int player = entry.GetInt("player");
-				chest.playerItems[player] = LootrUtilities.ReadItems(entry.GetList<TagCompound>("items"));
-			}
+		return tag;
+	}
 
-			foreach (var entry in tag.GetList<TagCompound>("playerRestoreTime"))
-			{
-				int player = entry.GetInt("player");
-				chest.playerRestoreTime[player] = entry.Get<uint>("time");
-			}
-
-			return chest;
-		}
-
-		public void FillChestWithPlayerItems(int player, Chest chest)
+	public static LootrChest Load(TagCompound tag)
+	{
+		var chest = new LootrChest
 		{
-			TryRestorePlayerItems(player);
-			chest.item = LootrUtilities.DeepCloneItems(playerItems[player]);
-		}
+			worldGenItems = LootrUtilities.ReadItems(tag.GetList<TagCompound>("worldGenItems"))
+		};
 
-		public void SavePlayerItems(int player, Item[] items)
+		foreach (var entry in tag.GetList<TagCompound>("playerItems"))
 		{
-			playerItems[player] = LootrUtilities.DeepCloneItems(items);
-			TrySheduleRestore(player);
+			int player = entry.GetInt("player");
+			chest.playerItems[player] = LootrUtilities.ReadItems(entry.GetList<TagCompound>("items"));
 		}
 
-		private void TryRestorePlayerItems(int player)
+		foreach (var entry in tag.GetList<TagCompound>("playerRestoreTime"))
 		{
-			bool shouldRestore = playerRestoreTime.TryGetValue(player, out uint restoreTime) && restoreTime <= Main.GameUpdateCount;
-
-			if (shouldRestore)
-				playerRestoreTime.Remove(player);
-
-			if (!playerItems.ContainsKey(player) || shouldRestore)
-				playerItems[player] = LootrUtilities.DeepCloneItems(worldGenItems);
+			int player = entry.GetInt("player");
+			chest.playerRestoreTime[player] = entry.Get<uint>("time");
 		}
 
-		private void TrySheduleRestore(int player)
-		{
-			if (!LootrConfig.Instance.AllowRestore)
-				return;
+		return chest;
+	}
 
-			if (playerRestoreTime.ContainsKey(player))
-				return;
+	public void FillChestWithPlayerItems(int player, Chest chest)
+	{
+		TryRestorePlayerItems(player);
+		chest.item = LootrUtilities.DeepCloneItems(playerItems[player], false);
+	}
 
-			if (!playerItems[player].All(item => item.IsAir))
-				return;
+	public void SavePlayerItems(int player, Item[] items)
+	{
+		playerItems[player] = LootrUtilities.DeepCloneItems(items);
+		TrySheduleRestore(player);
+	}
 
-			playerRestoreTime[player] = Main.GameUpdateCount + (LootrConfig.Instance.SecondsToRestore * 60);
-		}
+	private void TryRestorePlayerItems(int player)
+	{
+		bool shouldRestore = playerRestoreTime.TryGetValue(player, out uint restoreTime) && restoreTime <= Main.GameUpdateCount;
+
+		if (shouldRestore)
+			playerRestoreTime.Remove(player);
+
+		if (!playerItems.ContainsKey(player) || shouldRestore)
+			playerItems[player] = LootrUtilities.DeepCloneItems(worldGenItems);
+	}
+
+	private void TrySheduleRestore(int player)
+	{
+		if (!LootrConfig.Instance.AllowRestore)
+			return;
+
+		if (playerRestoreTime.ContainsKey(player))
+			return;
+
+		if (!playerItems[player].All(item => item.IsAir))
+			return;
+
+		playerRestoreTime[player] = Main.GameUpdateCount + (LootrConfig.Instance.SecondsToRestore * 60);
 	}
 }
