@@ -90,6 +90,7 @@ public class LootrChest
 		if (!playerItems[player].All(item => item.IsAir))
 			return;
 
-		playerRestoreTime[player] = Main.GameUpdateCount + (LootrConfig.Instance.SecondsToRestore * 60);
+		//FIXME: change Main.GameUpdateTime on sth better!!!
+		playerRestoreTime[player] = Main.GameUpdateCount + (uint)(LootrConfig.Instance.SecondsToRestore * 60);
 	}
 }

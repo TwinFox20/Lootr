@@ -1,4 +1,5 @@
 using System.IO;
+using LootrMod.Config;
 using LootrMod.Networking;
 using Terraria.ModLoader;
 
@@ -14,6 +15,8 @@ internal class LootrMod : Mod
 	public override void Load()
 	{
 		Instance = this;
+
+		if (!LootrConfig.Instance.DebugMode) return;
 
 		DisplayFieldsKeybind = KeybindLoader.RegisterKeybind(this, "DisplayFields", "I");
 		CreateLootrChestKeybind = KeybindLoader.RegisterKeybind(this, "CreateLootrChest", "L");

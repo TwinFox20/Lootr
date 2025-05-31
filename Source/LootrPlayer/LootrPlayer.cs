@@ -1,4 +1,8 @@
-﻿using LootrMod.DataStructures;
+﻿using System;
+using System.Linq;
+using Humanizer;
+using LootrMod.Config;
+using LootrMod.DataStructures;
 using LootrMod.Networking;
 using LootrMod.Systems;
 using LootrMod.Utilities;
@@ -33,6 +37,8 @@ internal class LootrPlayer : ModPlayer
 
 	public override void ProcessTriggers(TriggersSet triggersSet)
 	{
+		if (!LootrConfig.Instance.DebugMode) return;
+
 		if (LootrMod.DisplayFieldsKeybind.JustReleased)
 		{
 			Main.NewText("Chest: " + currentChest);
@@ -40,8 +46,16 @@ internal class LootrPlayer : ModPlayer
 
 			LootrSystem.TryGetLootrChest(lastChest, out _, out var lootrChest);
 			if (lootrChest == null) return;
-			
-			Main.NewText(lootrChest.playerItems[Player.whoAmI]);
+
+			var player = Player.whoAmI;
+
+			if (!lootrChest.playerItems.TryGetValue(player, out var playeritems)) return;
+			Main.NewText($"Player items: {playeritems.Select(i => i.Name).Humanize()}");
+
+			if (!lootrChest.playerRestoreTime.TryGetValue(player, out var restoretime)) return;
+			//FIXME: change Main.GameUpdateTime on sth better!!!
+			var timeSpan = TimeSpan.FromSeconds((restoretime - Main.GameUpdateCount) / 60);
+			Main.NewText($"Remaining time to restore: {restoretime / 60} {timeSpan:hh\\:mm\\:ss}");
 		}
 
 		if (LootrMod.CreateLootrChestKeybind.JustReleased)

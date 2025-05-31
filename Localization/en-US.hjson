@@ -27,6 +27,15 @@ Mods: {
 						new items will appear in the chest.
 						'''
 				}
+
+				DebugMode: {
+					Label: "[i:237] Debug mode"
+					Tooltip:
+						'''
+						This option exists only to help with
+						debugging while working with the mod.
+						'''
+				}
 			}
 		}
 	}

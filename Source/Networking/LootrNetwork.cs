@@ -56,16 +56,22 @@ public static class LootrNetwork
 
 	public static void SendChestOpen(int chestIndex, int player)
 	{
-		var p = CreatePacket(PacketType.ChestOpen, player);
-		p.Write((short)chestIndex);
-		p.Send(-1, player);
+		if (Main.netMode == NetmodeID.MultiplayerClient)
+		{
+			var p = CreatePacket(PacketType.ChestOpen, player);
+			p.Write((short)chestIndex);
+			p.Send(-1, player);
+		}
 	}
 
 	public static void SendChestClose(int chestIndex, int player)
 	{
-		var p = CreatePacket(PacketType.ChestClose, player);
-		p.Write((short)chestIndex);
-		p.Send(-1, player);
+		if (Main.netMode == NetmodeID.MultiplayerClient)
+		{
+			var p = CreatePacket(PacketType.ChestClose, player);
+			p.Write((short)chestIndex);
+			p.Send(-1, player);
+		}
 	}
 
 	private static void HandleDataSync(BinaryReader reader, int sender)

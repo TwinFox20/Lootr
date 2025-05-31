@@ -17,7 +17,11 @@ public class LootrConfig : ModConfig
 	public bool AllowRestore;
 
 	[BackgroundColor(0, 0, 0, 0)]
-	[Range(0, 86400)]
+	[Range(20 * 60, 24 * 60 * 60)]
 	[DefaultValue(1200)]
-	public uint SecondsToRestore;
+	public int SecondsToRestore;
+
+	[BackgroundColor(0, 0, 0, 0)]
+	[DefaultValue(false)]
+	public bool DebugMode;
 }
