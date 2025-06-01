@@ -25,10 +25,10 @@ internal class LootrPlayer : ModPlayer
 		currentChest = (short)Player.chest;
 		if (lastChest != currentChest)
 		{
-			if (lastChest != -1 && Player.chest == -1)
+			if (lastChest != -1 && currentChest == -1)
 				LootrSystem.OnChestClosed(lastChest, Player.whoAmI);
 			
-			else if (Player.chest != -1)
+			else if (currentChest != -1)
 				LootrSystem.OnChestOpened(currentChest, Player.whoAmI);
 
 			lastChest = currentChest;
@@ -44,18 +44,17 @@ internal class LootrPlayer : ModPlayer
 			Main.NewText("Chest: " + currentChest);
 			if (currentChest < 0) return;
 
-			LootrSystem.TryGetLootrChest(lastChest, out _, out var lootrChest);
+			LootrSystem.TryGetLootrChest(currentChest, out _, out var lootrChest);
 			if (lootrChest == null) return;
 
-			var player = Player.whoAmI;
+			Main.NewText($"World gen. items: {lootrChest.worldGenItems.Select(i => i.Name).Humanize()}");
 
-			if (!lootrChest.playerItems.TryGetValue(player, out var playeritems)) return;
+			if (!lootrChest.playerItems.TryGetValue(Player.whoAmI, out var playeritems)) return;
 			Main.NewText($"Player items: {playeritems.Select(i => i.Name).Humanize()}");
 
-			if (!lootrChest.playerRestoreTime.TryGetValue(player, out var restoretime)) return;
-			//FIXME: change Main.GameUpdateTime on sth better!!!
+			if (!lootrChest.playerRestoreTime.TryGetValue(Player.whoAmI, out var restoretime)) return;
 			var timeSpan = TimeSpan.FromSeconds((restoretime - Main.GameUpdateCount) / 60);
-			Main.NewText($"Remaining time to restore: {restoretime / 60} {timeSpan:hh\\:mm\\:ss}");
+			Main.NewText($"Remaining time to restore: {timeSpan:hh\\:mm\\:ss}");
 		}
 
 		if (LootrMod.CreateLootrChestKeybind.JustReleased)
@@ -70,6 +69,18 @@ internal class LootrPlayer : ModPlayer
 				worldGenItems = LootrUtilities.DeepCloneItems(chest.item)
 			};
 			chest.name = "Lootr Chest";
+		}
+
+		if (LootrMod.RestoreLootrChestKeybind.JustPressed)
+		{
+			Main.NewText("Chest: " + currentChest);
+			if (currentChest < 0) return;
+
+			LootrSystem.TryGetLootrChest(currentChest, out _, out var lootrChest);
+			if (lootrChest == null) return;
+
+			if (!lootrChest.playerRestoreTime.ContainsKey(Player.whoAmI)) return;
+			lootrChest.playerRestoreTime.Remove(Player.whoAmI);
 		}
 	}
 }

@@ -11,6 +11,7 @@ internal class LootrMod : Mod
 
 	public static ModKeybind DisplayFieldsKeybind;
 	public static ModKeybind CreateLootrChestKeybind;
+	public static ModKeybind RestoreLootrChestKeybind;
 
 	public override void Load()
 	{
@@ -20,6 +21,7 @@ internal class LootrMod : Mod
 
 		DisplayFieldsKeybind = KeybindLoader.RegisterKeybind(this, "DisplayFields", "I");
 		CreateLootrChestKeybind = KeybindLoader.RegisterKeybind(this, "CreateLootrChest", "L");
+		RestoreLootrChestKeybind = KeybindLoader.RegisterKeybind(this, "RestoreLootrChestKeybind", "O");
 	}
 
 	public override void Unload() => Instance = null;

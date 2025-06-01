@@ -54,22 +54,22 @@ public static class LootrNetwork
 		}
 	}
 
-	public static void SendChestOpen(int chestIndex, int player)
+	public static void SendChestOpen(short chestIndex, int player)
 	{
 		if (Main.netMode == NetmodeID.MultiplayerClient)
 		{
 			var p = CreatePacket(PacketType.ChestOpen, player);
-			p.Write((short)chestIndex);
+			p.Write(chestIndex);
 			p.Send(-1, player);
 		}
 	}
 
-	public static void SendChestClose(int chestIndex, int player)
+	public static void SendChestClose(short chestIndex, int player)
 	{
 		if (Main.netMode == NetmodeID.MultiplayerClient)
 		{
 			var p = CreatePacket(PacketType.ChestClose, player);
-			p.Write((short)chestIndex);
+			p.Write(chestIndex);
 			p.Send(-1, player);
 		}
 	}
@@ -99,7 +99,7 @@ public static class LootrNetwork
 		if (Main.netMode == NetmodeID.MultiplayerClient)
 			sender = reader.ReadByte();
 
-		int chestIndex = reader.ReadInt16();
+		var chestIndex = reader.ReadInt16();
 
 		if (Main.dedServ)
 			SendChestOpen(chestIndex, sender);
@@ -113,7 +113,7 @@ public static class LootrNetwork
 		if (Main.netMode == NetmodeID.MultiplayerClient)
 			sender = reader.ReadByte();
 
-		int chestIndex = reader.ReadInt16();
+		var chestIndex = reader.ReadInt16();
 
 		if (Main.dedServ)
 			SendChestClose(chestIndex, sender);

@@ -16,7 +16,7 @@ public class LootrSystem : ModSystem
 
 	public override void PostWorldGen()
 	{
-		for (int i = 0; i < Main.maxChests; i++)
+		for (ushort i = 0; i < Main.maxChests; i++)
 		{
 			var chest = Main.chest[i];
 			if (chest != null)
@@ -48,7 +48,7 @@ public class LootrSystem : ModSystem
 		}
 	}
 
-	public static bool TryGetLootrChest(int chestIndex, out Chest chest, out LootrChest lootrChest)
+	public static bool TryGetLootrChest(short chestIndex, out Chest chest, out LootrChest lootrChest)
 	{
 		lootrChest = default;
 		chest = Main.chest[chestIndex];
@@ -56,7 +56,7 @@ public class LootrSystem : ModSystem
 		return lootrChests.TryGetValue(new Point16(chest.x, chest.y), out lootrChest);
 	}
 
-	public static void OnChestOpened(int chestIndex, int player)
+	public static void OnChestOpened(short chestIndex, int player)
 	{
 		if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest))
 			return;
@@ -65,7 +65,7 @@ public class LootrSystem : ModSystem
 		LootrNetwork.SendChestOpen(chestIndex, player);
 	}
 
-	public static void OnChestClosed(int chestIndex, int player)
+	public static void OnChestClosed(short chestIndex, int player)
 	{
 		if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest))
 			return;
