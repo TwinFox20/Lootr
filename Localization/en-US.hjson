@@ -3,6 +3,7 @@ Mods: {
 		Keybinds: {
 			DisplayFields.DisplayName: Display Fields
 			CreateLootrChest.DisplayName: Create Lootr Chest
+			RestoreLootrChestKeybind.DisplayName: Restore Lootr Chest
 		}
 
 		Configs: {

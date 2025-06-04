@@ -3,7 +3,8 @@ using System.Linq;
 using Humanizer;
 using LootrMod.Config;
 using LootrMod.DataStructures;
-using LootrMod.Networking;
+using LootrMod.Networking.Chests;
+using LootrMod.Networking.Players;
 using LootrMod.Systems;
 using LootrMod.Utilities;
 using Terraria;
@@ -15,10 +16,21 @@ namespace LootrMod.LootrPlayer;
 
 internal class LootrPlayer : ModPlayer
 {
+	public uint TimeInWorld => joinTimestamp - Main.GameUpdateCount;
+	private uint joinTimestamp;
 	private short lastChest = -1;
 	private short currentChest = -1;
 
-	public override void OnEnterWorld() => LootrNetwork.SendDataToPlayer(Player.whoAmI);
+	public override void OnEnterWorld()
+	{
+		joinTimestamp = Main.GameUpdateCount;
+		PlayersNetwork.SendDataToPlayer(Player.whoAmI);
+	}
+
+	public override void PreSavePlayer()
+	{
+		PlayersNetwork.SendSubstructTimers(Player.whoAmI, TimeInWorld);
+	}
 
 	public override void PostUpdate()
 	{
@@ -44,15 +56,15 @@ internal class LootrPlayer : ModPlayer
 			Main.NewText("Chest: " + currentChest);
 			if (currentChest < 0) return;
 
-			LootrSystem.TryGetLootrChest(currentChest, out _, out var lootrChest);
-			if (lootrChest == null) return;
+			if (!LootrSystem.TryGetLootrChest(currentChest, out _, out var lootrChest)) return;
 
 			Main.NewText($"World gen. items: {lootrChest.worldGenItems.Select(i => i.Name).Humanize()}");
 
-			if (!lootrChest.playerItems.TryGetValue(Player.whoAmI, out var playeritems)) return;
+			var player = Player.whoAmI;
+			if (!lootrChest.playerItems.TryGetValue(player, out var playeritems)) return;
 			Main.NewText($"Player items: {playeritems.Select(i => i.Name).Humanize()}");
 
-			if (!lootrChest.playerRestoreTime.TryGetValue(Player.whoAmI, out var restoretime)) return;
+			if (!lootrChest.playerRestoreTime.TryGetValue(player, out var restoretime)) return;
 			var timeSpan = TimeSpan.FromSeconds((restoretime - Main.GameUpdateCount) / 60);
 			Main.NewText($"Remaining time to restore: {timeSpan:hh\\:mm\\:ss}");
 		}
@@ -76,11 +88,11 @@ internal class LootrPlayer : ModPlayer
 			Main.NewText("Chest: " + currentChest);
 			if (currentChest < 0) return;
 
-			LootrSystem.TryGetLootrChest(currentChest, out _, out var lootrChest);
-			if (lootrChest == null) return;
+			if (!LootrSystem.TryGetLootrChest(currentChest, out _, out var lootrChest)) return;
 
-			if (!lootrChest.playerRestoreTime.ContainsKey(Player.whoAmI)) return;
-			lootrChest.playerRestoreTime.Remove(Player.whoAmI);
+			var player = Player.whoAmI;
+			lootrChest.playerRestoreTime.Remove(player);
+			ChestsNetwork.SendChestRestore(currentChest, player);
 		}
 	}
 }

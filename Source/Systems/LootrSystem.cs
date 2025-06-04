@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using LootrMod.DataStructures;
-using LootrMod.Networking;
+using LootrMod.Networking.Chests;
 using LootrMod.Utilities;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 
@@ -58,20 +59,20 @@ public class LootrSystem : ModSystem
 
 	public static void OnChestOpened(short chestIndex, int player)
 	{
-		if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest))
-			return;
+		if (!TryGetLootrChest(chestIndex, out var _, out var _)) return;
 
-		lootrChest.FillChestWithPlayerItems(player, chest);
-		LootrNetwork.SendChestOpen(chestIndex, player);
+		if (Main.netMode == NetmodeID.MultiplayerClient)
+			ChestsNetwork.SendChestOpen(chestIndex, player);
+		//lootrChest.FillChestWithPlayerItems(player, chest);
 	}
 
 	public static void OnChestClosed(short chestIndex, int player)
 	{
-		if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest))
-			return;
+		if (!TryGetLootrChest(chestIndex, out var _, out var _)) return;
 
-		lootrChest.SavePlayerItems(player, chest.item);
-		LootrNetwork.SendChestClose(chestIndex, player);
+		if (Main.netMode == NetmodeID.MultiplayerClient)
+			ChestsNetwork.SendChestClose(chestIndex, player);
+		//lootrChest.SavePlayerItems(player, chest.item);
 	}
 
 	private static void TryRegisterLootrChest(Chest chest)

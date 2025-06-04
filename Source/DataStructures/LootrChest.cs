@@ -71,13 +71,16 @@ public class LootrChest
 
 	private void OnFirstOpen(int player)
 	{
-		if (playerItems.ContainsKey(player)) return;
-		playerItems[player] = LootrUtilities.DeepCloneItems(worldGenItems);
+		if (!playerItems.ContainsKey(player) && !playerRestoreTime.ContainsKey(player))
+			playerItems[player] = LootrUtilities.DeepCloneItems(worldGenItems);
 	}
 
 	private void TryToRestore(int player)
 	{
-		if (playerRestoreTime.TryGetValue(player, out uint restoreTime) || restoreTime > Main.GameUpdateCount) return;
+		if (!playerRestoreTime.TryGetValue(player, out uint restoreTime)) return;
+		var playerTimeInWorld = Main.player[player].GetModPlayer<LootrPlayer.LootrPlayer>().TimeInWorld;
+		if (restoreTime > playerTimeInWorld) return;
+
 		playerRestoreTime.Remove(player);
 		playerItems[player] = LootrUtilities.DeepCloneItems(worldGenItems);
 	}

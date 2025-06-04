@@ -13,3 +13,5 @@ Whether you're exploring dungeons, raiding sky islands, or delving deep into the
 [h4] No more arguments over who gets the best gear! [/h4]
 
 Inspired by [url=www.curseforge.com/minecraft/mc-mods/lootr] Lootr [/url] mod for Minecraft.
+
+My mod also have [url=github.com/TwinFox20/Lootr] GitHub page [/url]
