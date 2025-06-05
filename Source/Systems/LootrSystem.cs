@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Humanizer;
+using LootrMod.Config;
 using LootrMod.DataStructures;
-using LootrMod.Networking.Chests;
 using LootrMod.Utilities;
 using Terraria;
 using Terraria.DataStructures;
@@ -49,7 +51,7 @@ public class LootrSystem : ModSystem
 		}
 	}
 
-	public static bool TryGetLootrChest(short chestIndex, out Chest chest, out LootrChest lootrChest)
+	public static bool TryGetLootrChest(int chestIndex, out Chest chest, out LootrChest lootrChest)
 	{
 		lootrChest = default;
 		chest = Main.chest[chestIndex];
@@ -57,22 +59,27 @@ public class LootrSystem : ModSystem
 		return lootrChests.TryGetValue(new Point16(chest.x, chest.y), out lootrChest);
 	}
 
-	public static void OnChestOpened(short chestIndex, int player)
+	public static void OnChestOpen(int chestIndex, int player)
 	{
-		if (!TryGetLootrChest(chestIndex, out var _, out var _)) return;
+		if (Main.dedServ || Main.netMode == NetmodeID.SinglePlayer)
+		{
+			if (chestIndex < 0) return;
+			if (LootrConfig.Instance.DebugMode)
+				Console.WriteLine($"Chest '{chestIndex}' opened by player '{player}'\n");
 
-		if (Main.netMode == NetmodeID.MultiplayerClient)
-			ChestsNetwork.SendChestOpen(chestIndex, player);
-		//lootrChest.FillChestWithPlayerItems(player, chest);
+			if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest)) return;
+			lootrChest.OnChestOpen(chest, player);
+			ShowLootrChestDebugInfo(lootrChest, player);
+		}
 	}
 
-	public static void OnChestClosed(short chestIndex, int player)
+	public static void OnChestClose(int chestIndex, int player)
 	{
-		if (!TryGetLootrChest(chestIndex, out var _, out var _)) return;
-
-		if (Main.netMode == NetmodeID.MultiplayerClient)
-			ChestsNetwork.SendChestClose(chestIndex, player);
-		//lootrChest.SavePlayerItems(player, chest.item);
+		if (Main.dedServ || Main.netMode == NetmodeID.SinglePlayer)
+		{
+			if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest)) return;
+			lootrChest.OnChestClose(chest, player);
+		}
 	}
 
 	private static void TryRegisterLootrChest(Chest chest)
@@ -86,5 +93,23 @@ public class LootrSystem : ModSystem
 			worldGenItems = LootrUtilities.DeepCloneItems(chest.item)
 		};
 		chest.name = "Lootr Chest";
+	}
+
+	private static void ShowLootrChestDebugInfo(LootrChest lootrChest, int player)
+	{
+		if (!LootrConfig.Instance.DebugMode) return;
+
+		var logger = $"World gen. items: {lootrChest.worldGenItems.Select(i => i.Name).Humanize()}\n";
+
+		if (lootrChest.playerItems.TryGetValue(player, out var playeritems) && !playeritems.All(item => item.IsAir))
+			logger += $"Player items: {playeritems.Select(i => i.Name).Humanize()}\n";
+
+		if (lootrChest.playerRestoreTime.TryGetValue(player, out var timeToRestore))
+		{
+			var timeSpan = TimeSpan.FromSeconds((timeToRestore - Main.GameUpdateCount) / 60);
+			logger += $"Remaining time to restore: {timeSpan:hh\\:mm\\:ss}\n";
+		}
+
+		Console.WriteLine(logger);
 	}
 }

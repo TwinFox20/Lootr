@@ -56,30 +56,30 @@ public class LootrChest
 		return chest;
 	}
 
-	public void FillChestWithPlayerItems(int player, Chest chest)
+	public void OnChestOpen(Chest chest, int player)
 	{
 		OnFirstOpen(player);
 		TryToRestore(player);
 		chest.item = LootrUtilities.DeepCloneItems(playerItems[player], false);
 	}
 
-	public void SavePlayerItems(int player, Item[] items)
+	public void OnChestClose(Chest chest, int player)
 	{
-		playerItems[player] = LootrUtilities.DeepCloneItems(items);
+		playerItems[player] = LootrUtilities.DeepCloneItems(chest.item);
 		TrySheduleRestore(player);
 	}
 
 	private void OnFirstOpen(int player)
 	{
-		if (!playerItems.ContainsKey(player) && !playerRestoreTime.ContainsKey(player))
+		if ((!playerItems.TryGetValue(player, out var items) || items.All(item => item.IsAir)) && !playerRestoreTime.ContainsKey(player))
 			playerItems[player] = LootrUtilities.DeepCloneItems(worldGenItems);
 	}
 
 	private void TryToRestore(int player)
 	{
-		if (!playerRestoreTime.TryGetValue(player, out uint restoreTime)) return;
+		if (!playerRestoreTime.TryGetValue(player, out uint timeToRestore)) return;
 		var playerTimeInWorld = Main.player[player].GetModPlayer<LootrPlayer.LootrPlayer>().TimeInWorld;
-		if (restoreTime > playerTimeInWorld) return;
+		if (timeToRestore > playerTimeInWorld) return;
 
 		playerRestoreTime.Remove(player);
 		playerItems[player] = LootrUtilities.DeepCloneItems(worldGenItems);
@@ -87,7 +87,7 @@ public class LootrChest
 
 	private void TrySheduleRestore(int player)
 	{
-		if (!LootrConfig.Instance.AllowRestore || playerRestoreTime.ContainsKey(player) || playerItems.ContainsKey(player)) return;
+		if (!LootrConfig.Instance.AllowRestore || playerRestoreTime.ContainsKey(player) || !playerItems[player].All(item => item.IsAir)) return;
 		playerRestoreTime[player] = (uint)LootrConfig.Instance.SecondsToRestore * 60;
 	}
 }

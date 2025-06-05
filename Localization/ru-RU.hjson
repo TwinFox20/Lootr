@@ -1,11 +1,5 @@
 Mods: {
 	LootrMod: {
-		Keybinds: {
-			DisplayFields.DisplayName: Отобразить поля
-			CreateLootrChest.DisplayName: Создать Lootr Chest
-			RestoreLootrChestKeybind.DisplayName: Восстановить Lootr Chest
-		}
-
 		Configs: {
 			LootrConfig: {
 				DisplayName: Lootr Config

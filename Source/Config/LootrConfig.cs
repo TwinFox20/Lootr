@@ -22,6 +22,7 @@ public class LootrConfig : ModConfig
 	public int SecondsToRestore;
 
 	[BackgroundColor(0, 0, 0, 0)]
+	[ReloadRequired]
 	[DefaultValue(false)]
 	public bool DebugMode;
 }
