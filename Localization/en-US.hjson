@@ -1,5 +1,5 @@
 Mods: {
-	LootrMod: {
+	Lootr: {
 		Configs: {
 			LootrConfig: {
 				DisplayName: Lootr Config

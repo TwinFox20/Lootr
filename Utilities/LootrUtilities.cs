@@ -18,7 +18,7 @@ internal static class LootrUtilities
 	{
 		var length = compact ? items.Count : 40;
 		var result = new List<Item>(length);
-		for (byte i = 0; i < length; i++)
+		for (var i = 0; i < length; i++)
 			if (i < items.Count && !items[i].IsAir)
 				result.Add(items[i].Clone());
 			else if (!compact)
@@ -30,7 +30,7 @@ internal static class LootrUtilities
 	{
 		var length = items.Count;
 		var result = new TagCompound[length];
-		for (byte i = 0; i < length; i++)
+		for (var i = 0; i < length; i++)
 			result[i] = ItemIO.Save(items[i]);
 		return [.. result];
 	}
@@ -39,12 +39,12 @@ internal static class LootrUtilities
 	{
 		var length = tags.Count;
 		var result = new Item[length];
-		for (byte i = 0; i < length; i++)
+		for (var i = 0; i < length; i++)
 			result[i] = ItemIO.Load(tags[i]);
 		return result;
 	}
-	
+
 	public static bool IsAir(this IList<Item> items) => items == null || items.All(i => i.IsAir);
-	
+
 	public static bool IsEmpty(this Guid guid) => guid == Guid.Empty;
 }
