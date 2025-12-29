@@ -1,0 +1,17 @@
+    [h3] Say goodbye to empty chests and loot stealing! [/h3]
+
+[list]
+  [*]Brings a fresh, multiplayer-friendly loot system to Terraria.
+  [*]Ensures that every player gets their own unique rewards from chests and containers across the world.
+  [*]Makes sure everyone gets their share.
+  [*]Perfect for co-op adventures, modpacks, or large servers.
+  [*]Work in a seamless and intuitive way.
+[/list]
+
+Whether you're exploring dungeons, raiding sky islands, or delving deep into the Underworld, every chest will generate loot for each player, creating a fair and balanced experience for multiplayer sessions.
+
+[h4] No more arguments over who gets the best gear! [/h4]
+
+Inspired by [url=www.curseforge.com/minecraft/mc-mods/lootr] Lootr [/url] mod for Minecraft.
+
+My mod also have [url=github.com/TwinFox20/Lootr] GitHub page [/url]
