@@ -401,4 +401,3 @@ FodyWeavers.xsd
 *.sln.iml
 Properties/
 .idea/
-Properties/launchSettings.json
