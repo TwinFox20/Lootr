@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Humanizer;
 using LootrMod.Config;
 using LootrMod.Utilities;
 using Terraria;
@@ -8,7 +9,7 @@ using Terraria.ModLoader.IO;
 
 namespace LootrMod.DataStructures;
 
-public sealed class LootrChest(Item[] baseLoot)
+public class LootrChest(Item[] baseLoot)
 {
 	private readonly Item[] _baseLoot = LootrUtilities.DeepCloneItems(baseLoot);
 	private Dictionary<Guid, Item[]> PlayerItems { get; } = [];
@@ -16,19 +17,21 @@ public sealed class LootrChest(Item[] baseLoot)
 
 	public static LootrChest Load(TagCompound tag)
 	{
-		var baseLoot = LootrUtilities.ReadItems(tag.GetList<TagCompound>("GeneratedItems"));
+		var baseLoot = LootrUtilities.ReadItems(tag.GetList<TagCompound>("baseLoot"));
 		var chest = new LootrChest(baseLoot);
 
-		foreach (var entry in tag.GetList<TagCompound>("Items"))
+		foreach (var entry in tag.GetList<TagCompound>("playerItems"))
 		{
-			if (!Guid.TryParse(entry.GetString("player"), out var playerId)) continue;
-			chest.PlayerItems[playerId] = LootrUtilities.ReadItems(entry.GetList<TagCompound>("items"));
+			if (!Guid.TryParse(entry.GetString("player"), out var player)) continue;
+			chest.PlayerItems[player] = LootrUtilities.ReadItems(entry.GetList<TagCompound>("items"));
 		}
 
-		foreach (var entry in tag.GetList<TagCompound>("PlayerRestoreTime"))
+		foreach (var (player, items) in chest.PlayerItems) Console.WriteLine($"Player: {player}\n{items.Humanize()}");
+
+		foreach (var entry in tag.GetList<TagCompound>("restoreTimers"))
 		{
-			if (!Guid.TryParse(entry.GetString("player"), out var playerId)) continue;
-			chest.RestoreTimers[playerId] = entry.Get<uint>("time");
+			if (!Guid.TryParse(entry.GetString("player"), out var player)) continue;
+			chest.RestoreTimers[player] = entry.Get<uint>("time");
 		}
 
 		return chest;
@@ -38,15 +41,15 @@ public sealed class LootrChest(Item[] baseLoot)
 	{
 		return new TagCompound
 		{
-			["base_loot"] = LootrUtilities.WriteItems(_baseLoot),
+			["baseLoot"] = LootrUtilities.WriteItems(_baseLoot),
 
-			["player_items"] = PlayerItems.Select(pair => new TagCompound
+			["playerItems"] = PlayerItems.Select(pair => new TagCompound
 			{
 				["player"] = pair.Key.ToString("N"),
 				["items"] = LootrUtilities.WriteItems(pair.Value)
 			}).ToList(),
 
-			["restore_timers"] = RestoreTimers.Select(pair => new TagCompound
+			["restoreTimers"] = RestoreTimers.Select(pair => new TagCompound
 			{
 				["player"] = pair.Key.ToString("N"),
 				["time"] = pair.Value

@@ -3,7 +3,7 @@ using Terraria.ModLoader;
 
 namespace LootrMod.LootrPlayer;
 
-internal class LootrPlayer : ModPlayer
+public class LootrPlayer : ModPlayer
 {
 	private int _lastChest = -1;
 	private int _currentChest = -1;

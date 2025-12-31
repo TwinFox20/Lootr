@@ -9,7 +9,7 @@
     "TerrariaServer": {
       "commandName": "Executable",
       "executablePath": "/usr/bin/dotnet",
-      "commandLineArgs": "/home/twinfox/.local/share/Steam/steamapps/common/tModLoader/tModLoaderServer.dll",
+      "commandLineArgs": "/home/twinfox/.local/share/Steam/steamapps/common/tModLoader/tModLoader.dll -server",
       "workingDirectory": "/home/twinfox/.local/share/Steam/steamapps/common/tModLoader"
     }
   }

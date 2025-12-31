@@ -12,25 +12,25 @@ public static class LootrNetwork
 	private enum PacketType : byte
 	{
 		HandleGuid = 0,
-		//SubstrTimers = 1
+		SubstrTimers = 1
 	}
 
 	public static void HandlePacket(BinaryReader reader, int sender)
 	{
-		switch ((PacketType)reader.ReadByte())
+		var packetType = (PacketType)reader.ReadByte();
+		switch (packetType)
 		{
 			case PacketType.HandleGuid: HandleGuid(reader, sender); break; // Client -> Server
-			//case PacketType.SubstrTimers: HandleSubstrTimers(reader, sender); break; // Client -> Server
+			case PacketType.SubstrTimers: HandleSubstrTimers(reader, sender); break; // Client -> Server
 			default: throw new NotImplementedException();
 		}
 	}
 
 	#region Guid
-
-	public static void SendGuidToHandle(this Player _, Guid guid)
+	public static void SendGuidToHandle(this Player player, Guid guid)
 	{
+		Console.WriteLine($"Sending guid to {player.name}: {guid}");
 		var packet = LootrMod.Instance.GetPacket(16);
-		// var packet = NetworkUtilities.CreatePacket(PacketType.HandleGuid, 16);
 		packet.Write((byte)0);
 		packet.Write(guid.ToString("N"));
 		packet.Send();
@@ -38,29 +38,29 @@ public static class LootrNetwork
 
 	private static void HandleGuid(BinaryReader reader, int sender)
 	{
-		if (!Main.dedServ) return;
 		var guid = Guid.Parse(reader.ReadString());
-		if (guid.IsEmpty() || UniqueSystem.HasGuid(guid)) Netplay.Clients[sender].Reset();
-		else UniqueSystem.SetGuid(sender, guid);
+		Console.WriteLine($"Getting guid from {sender}: {guid}");
+		if (!Main.dedServ) return;
+		if (guid.IsEmpty() || UniquePlayerLib.HasGuid(guid)) Netplay.Clients[sender].Reset();
+		else UniquePlayerLib.SetGuid(sender, guid);
+		Console.WriteLine($"Sender {sender}: {guid}");
 	}
-
 	#endregion
 
 	#region RestoreTime
-
-	public static void SendSubtractTimers(this Player _, uint deltaTime)
+	public static void SendSubtractTimers(this Player player, uint deltaTime)
 	{
-		// if (Main.netMode != NetmodeID.MultiplayerClient) return;
-		// var p = NetworkUtilities.CreatePacket(PacketType.SubstrTimers, 4);
-		// p.Write(deltaTime);
-		// p.Send();
+		if (Main.netMode != NetmodeID.MultiplayerClient) return;
+		var packet = LootrMod.Instance.GetPacket(4);
+		packet.Write(deltaTime);
+		packet.Send();
 	}
 
 	private static void HandleSubstrTimers(BinaryReader reader, int sender)
 	{
-		if (!Main.dedServ) return;
 		var deltaTime = reader.ReadUInt32();
-		var player = UniqueSystem.GetGuid(sender);
+		var player = UniquePlayerLib.GetGuid(sender);
+		if (!Main.dedServ) return;
 		foreach (var (_, chest) in LootrSystem.LootrChests)
 		{
 			var restoreTimers = chest.RestoreTimers;
@@ -70,6 +70,5 @@ public static class LootrNetwork
 			else restoreTimers[player] -= deltaTime;
 		}
 	}
-
 	#endregion
 }

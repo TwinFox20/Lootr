@@ -24,5 +24,5 @@ public class LootrConfig : ModConfig
 	[BackgroundColor(0, 0, 0, 0)]
 	[ReloadRequired]
 	[DefaultValue(false)]
-	public bool DebugMode;
+	public bool Debug;
 }

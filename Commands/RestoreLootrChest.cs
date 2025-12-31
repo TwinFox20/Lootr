@@ -22,7 +22,7 @@ namespace LootrMod.Commands
 
 			Guid player; short chest = 0;
 			try {
-				player = UniqueSystem.GetGuid(Convert.ToByte(args[0]));
+				player = UniquePlayerLib.GetGuid(Convert.ToByte(args[0]));
 				if (args.Length > 1) chest = Convert.ToInt16(args[1]);
 			} catch { throw new UsageException("Arguments conversion error!", Color.Red); }
 

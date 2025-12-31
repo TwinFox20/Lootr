@@ -31,6 +31,11 @@ Mods: {
 						debugging while working with the mod.
 						'''
 				}
+
+				Debug: {
+					Label: Debug
+					Tooltip: ""
+				}
 			}
 		}
 	}

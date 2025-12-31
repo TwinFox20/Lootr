@@ -5,11 +5,9 @@
 
 	<!-- General -->
 	<PropertyGroup>
-	  <Platforms>AnyCPU</Platforms>
+    <Platforms>AnyCPU</Platforms>
 		<ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
 		<RootNamespace>LootrMod</RootNamespace>
 	</PropertyGroup>
-	
-	<!-- References -->
 
 </Project>

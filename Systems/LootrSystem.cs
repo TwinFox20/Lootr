@@ -33,15 +33,15 @@ public class LootrSystem : ModSystem
 			chestTag["position"] = position;
 			serializedChests.Add(chestTag);
 		}
-		tag["lootr_chests"] = serializedChests;
+		tag["lootrChests"] = serializedChests;
 	}
 
 	public override void LoadWorldData(TagCompound tag)
 	{
 		LootrChests.Clear();
-		if (!tag.ContainsKey("lootr_chests")) return;
+		if (!tag.ContainsKey("lootrChests")) return;
 
-		foreach (var chestTag in tag.GetList<TagCompound>("lootr_chests"))
+		foreach (var chestTag in tag.GetList<TagCompound>("lootrChests"))
 		{
 			var position = chestTag.Get<Point16>("position");
 			LootrChests[position] = LootrChest.Load(chestTag);
@@ -58,19 +58,19 @@ public class LootrSystem : ModSystem
 	public static void HandleChestOpened(int chestIndex, int player)
 	{
 		if (!Main.dedServ && Main.netMode != NetmodeID.SinglePlayer) return;
-		if (LootrConfig.Instance.DebugMode) Console.WriteLine($"Chest '{chestIndex}' opened by player '{player}'\n");
+		if (LootrConfig.Instance.Debug) Console.WriteLine($"Chest '{chestIndex}' was opened by player '{player}'\n");
 
 		if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest)) return;
-		var playerId = Guid.Empty;
-		lootrChest.HandleChestOpened(chest, playerId);
+		var guid = UniquePlayerLib.GetGuid(player);
+		lootrChest.HandleChestOpened(chest, guid);
 	}
 
 	public static void HandleChestClosed(int chestIndex, int player)
 	{
 		if (!Main.dedServ && Main.netMode != NetmodeID.SinglePlayer) return;
 		if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest)) return;
-		var playerId = Guid.Empty;
-		lootrChest.HandleChestClosed(chest, playerId);
+		var guid = UniquePlayerLib.GetGuid(player);
+		lootrChest.HandleChestClosed(chest, guid);
 	}
 
 	private static void TryRegisterLootrChest(Chest chest)

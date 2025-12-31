@@ -4,7 +4,7 @@ using Terraria.ModLoader;
 
 namespace LootrMod;
 
-internal abstract class LootrMod : Mod
+public class LootrMod : Mod
 {
 	public static LootrMod Instance;
 

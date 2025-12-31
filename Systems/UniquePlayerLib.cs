@@ -12,29 +12,13 @@ using LootrMod.Utilities;
 
 namespace LootrMod.Systems;
 
-public abstract class UniquePlayerSystem : ModSystem
+#region Server-Side
+public class UniquePlayerSystem : ModSystem
 {
 	public override void Load() {
 		IL_NetMessage.SyncOnePlayer += RemoveGuidOnPlayerLeft;
-		IL_NetMessage.SyncOnePlayer += TestGuidInMultiplayer;
 	}
-	
-	private static void TestGuidInMultiplayer(ILContext il)
-	{
-		var c = new ILCursor(il);
-		var serverOnPlayerLeft = new Func<Instruction, bool>[]
-		{
-			i => i.MatchLdcI4(19),
-			i => i.MatchLdelemRef(),
-			i => i.MatchLdcI4(1)
-		};
-		c.GotoNext(serverOnPlayerLeft);
-		c.Index--;
-		c.EmitLdarg(0);
-		c.EmitDelegate<Action<int>>(player =>
-			Console.WriteLine($"Server: {Main.player[player].GetModPlayer<UniquePlayer>().Guid}"));
-	}
-	
+
 	private static void RemoveGuidOnPlayerLeft(ILContext il)
 	{
 		var c = new ILCursor(il);
@@ -47,12 +31,15 @@ public abstract class UniquePlayerSystem : ModSystem
 		c.GotoNext(serverOnPlayerLeft);
 		c.Index--;
 		c.EmitLdarg(0);
-		c.EmitDelegate<Action<int>>(player => UniqueSystem.RemovePlayer(player));
+		c.EmitDelegate<Action<int>>(player =>
+		{
+			Console.WriteLine($"Server: {Main.player[player].GetModPlayer<UniquePlayer>().Guid}");
+			UniquePlayerLib.RemovePlayer(player);
+		});
 	}
 }
 
-#region Server-Side
-public static class UniqueSystem
+public static class UniquePlayerLib
 {
 	private static Dictionary<int, Guid> SessionIds { get; } = new(Main.player.Length);
 
@@ -142,13 +129,13 @@ public class UniquePlayer : ModPlayer
 	public override void SaveData(TagCompound tag)
 	{
 		if (Guid.IsEmpty()) Guid = Guid.NewGuid();
-		tag["lootr_guid"] = Guid.ToString("N");
+		tag["lootrGuid"] = Guid.ToString("N");
 	}
 
 	public override void LoadData(TagCompound tag)
 	{
-		if (!tag.ContainsKey("lootr_guid")) return;
-		var guid = Guid.Parse(tag.GetString("lootr_guid"));
+		if (!tag.ContainsKey("lootrGuid")) return;
+		var guid = Guid.Parse(tag.GetString("lootrGuid"));
 		if (guid.IsEmpty()) return;
 		Guid = guid;
 	}
@@ -157,7 +144,7 @@ public class UniquePlayer : ModPlayer
 	{
 		switch (Main.netMode)
 		{
-			case NetmodeID.SinglePlayer: UniqueSystem.SetGuid(Player, Guid); break;
+			case NetmodeID.SinglePlayer: UniquePlayerLib.SetGuid(Player, Guid); break;
 			case NetmodeID.MultiplayerClient: Player.SendGuidToHandle(Guid); break;
 		}
 	}
