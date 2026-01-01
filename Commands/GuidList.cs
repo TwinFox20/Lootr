@@ -8,11 +8,10 @@ using Terraria.ModLoader;
 
 namespace LootrMod.Commands;
 
-public class ShowGuidList : ModCommand
+public class GuidList : ModCommand
 {
 	public override string Command => "guidlist";
 	public override CommandType Type => CommandType.Console;
-	public override string Usage => "/guidlist";
 	public override string Description => "Displays a list of current player's guid.";
 
 	public override void Action(CommandCaller caller, string input, string[] args)

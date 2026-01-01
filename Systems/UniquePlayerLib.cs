@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using System.Linq;
+using LootrMod.Config;
 using LootrMod.Networking;
 using LootrMod.Utilities;
 
@@ -15,9 +16,7 @@ namespace LootrMod.Systems;
 #region Server-Side
 public class UniquePlayerSystem : ModSystem
 {
-	public override void Load() {
-		IL_NetMessage.SyncOnePlayer += RemoveGuidOnPlayerLeft;
-	}
+	public override void Load() => IL_NetMessage.SyncOnePlayer += RemoveGuidOnPlayerLeft;
 
 	private static void RemoveGuidOnPlayerLeft(ILContext il)
 	{
@@ -33,7 +32,7 @@ public class UniquePlayerSystem : ModSystem
 		c.EmitLdarg(0);
 		c.EmitDelegate<Action<int>>(player =>
 		{
-			Console.WriteLine($"Server: {Main.player[player].GetModPlayer<UniquePlayer>().Guid}");
+			if (LootrConfig.Instance.Debug) Console.WriteLine($"{UniquePlayerLib.GetGuid(player)} has left");
 			UniquePlayerLib.RemovePlayer(player);
 		});
 	}
@@ -124,19 +123,19 @@ public static class UniquePlayerLib
 #region Client-Side
 public class UniquePlayer : ModPlayer
 {
-	public Guid Guid { get; private set; }
+	private Guid Guid { get; set; }
 
 	public override void SaveData(TagCompound tag)
 	{
 		if (Guid.IsEmpty()) Guid = Guid.NewGuid();
-		tag["lootrGuid"] = Guid.ToString("N");
+		tag["guid"] = Guid.ToString("N");
 	}
 
 	public override void LoadData(TagCompound tag)
 	{
-		if (!tag.ContainsKey("lootrGuid")) return;
-		var guid = Guid.Parse(tag.GetString("lootrGuid"));
-		if (guid.IsEmpty()) return;
+		if (!tag.ContainsKey("guid")) return;
+		var guid = Guid.Parse(tag.GetString("guid"));
+		if (guid.IsEmpty()) throw new Exception($"Trying to load empty guid!");
 		Guid = guid;
 	}
 
@@ -145,7 +144,7 @@ public class UniquePlayer : ModPlayer
 		switch (Main.netMode)
 		{
 			case NetmodeID.SinglePlayer: UniquePlayerLib.SetGuid(Player, Guid); break;
-			case NetmodeID.MultiplayerClient: Player.SendGuidToHandle(Guid); break;
+			case NetmodeID.MultiplayerClient: Player.SendGuidToServer(Guid); break;
 		}
 	}
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Humanizer;
 using LootrMod.Config;
 using LootrMod.Utilities;
 using Terraria;
@@ -15,87 +14,72 @@ public class LootrChest(Item[] baseLoot)
 	private Dictionary<Guid, Item[]> PlayerItems { get; } = [];
 	public Dictionary<Guid, uint> RestoreTimers { get; } = [];
 
+	#region NBT
 	public static LootrChest Load(TagCompound tag)
 	{
 		var baseLoot = LootrUtilities.ReadItems(tag.GetList<TagCompound>("baseLoot"));
 		var chest = new LootrChest(baseLoot);
-
 		foreach (var entry in tag.GetList<TagCompound>("playerItems"))
 		{
-			if (!Guid.TryParse(entry.GetString("player"), out var player)) continue;
-			chest.PlayerItems[player] = LootrUtilities.ReadItems(entry.GetList<TagCompound>("items"));
+			var guid = Guid.Parse(entry.GetString("player"));
+			var items = entry.GetList<TagCompound>("items");
+			chest.PlayerItems[guid] = LootrUtilities.ReadItems(items);
 		}
-
-		foreach (var (player, items) in chest.PlayerItems) Console.WriteLine($"Player: {player}\n{items.Humanize()}");
 
 		foreach (var entry in tag.GetList<TagCompound>("restoreTimers"))
 		{
-			if (!Guid.TryParse(entry.GetString("player"), out var player)) continue;
-			chest.RestoreTimers[player] = entry.Get<uint>("time");
+			var guid = Guid.Parse(entry.GetString("player"));
+			chest.RestoreTimers[guid] = entry.Get<uint>("time");
 		}
-
 		return chest;
 	}
 
 	public TagCompound Save()
 	{
-		return new TagCompound
-		{
+		return new TagCompound {
 			["baseLoot"] = LootrUtilities.WriteItems(_baseLoot),
 
-			["playerItems"] = PlayerItems.Select(pair => new TagCompound
-			{
+			["playerItems"] = PlayerItems.Select(pair => new TagCompound {
 				["player"] = pair.Key.ToString("N"),
 				["items"] = LootrUtilities.WriteItems(pair.Value)
 			}).ToList(),
 
-			["restoreTimers"] = RestoreTimers.Select(pair => new TagCompound
-			{
+			["restoreTimers"] = RestoreTimers.Select(pair => new TagCompound {
 				["player"] = pair.Key.ToString("N"),
 				["time"] = pair.Value
 			}).ToList()
 		};
 	}
+	#endregion
 
-	public Item[] GetPlayerItems(Guid playerId) => PlayerItems.TryGetValue(playerId, out var items) ? items : [];
-
-	public void HandleChestOpened(Chest chest, Guid playerId)
+	public void HandleChestOpened(Chest chest, Guid guid)
 	{
-		EnsurePlayerItems(playerId);
-		TryRestoreLoot(playerId);
-
-		chest.item = LootrUtilities.DeepCloneItems(PlayerItems[playerId], false);
+		EnsurePlayerItems(guid);
+		TryRestoreLoot(guid);
+		chest.item = LootrUtilities.DeepCloneItems(PlayerItems[guid], false);
 	}
 
-	public void HandleChestClosed(Chest chest, Guid playerId)
+	private void EnsurePlayerItems(Guid guid)
 	{
-		PlayerItems[playerId] = LootrUtilities.DeepCloneItems(chest.item);
-		ScheduleRestoreIfEmpty(playerId);
+		var empty = !PlayerItems.TryGetValue(guid, out var items) || items.IsAir();
+		if (LootrConfig.Instance.Debug)
+			Console.WriteLine($"Player {guid}: {(empty ? "don't have loot" : "have loot")}.");
+		if (empty && !RestoreTimers.ContainsKey(guid)) PlayerItems[guid] = CloneBaseLoot();
 	}
 
-	private void EnsurePlayerItems(Guid playerId)
+	private void TryRestoreLoot(Guid guid)
 	{
-		var hasLoot = PlayerItems.TryGetValue(playerId, out var items) && !items.IsAir();
-		if (!hasLoot && !RestoreTimers.ContainsKey(playerId)) PlayerItems[playerId] = CloneBaseLoot();
+		if (!RestoreTimers.TryGetValue(guid, out var restoreTime ) || restoreTime > 1) return;
+		RestoreTimers.Remove(guid);
+		PlayerItems[guid] = CloneBaseLoot();
 	}
 
-	private void TryRestoreLoot(Guid playerId)
+	public void HandleChestClosed(Chest chest, Guid guid)
 	{
-		if (!RestoreTimers.TryGetValue(playerId, out var restoreTime)) return;
-		if (restoreTime > 1) return;
-
-		RestoreTimers.Remove(playerId);
-		PlayerItems[playerId] = CloneBaseLoot();
-	}
-
-	private void ScheduleRestoreIfEmpty(Guid playerId)
-	{
+		PlayerItems[guid] = LootrUtilities.DeepCloneItems(chest.item);
 		var config = LootrConfig.Instance;
-		if (!config.AllowRestore) return;
-		if (RestoreTimers.ContainsKey(playerId)) return;
-		if (!PlayerItems[playerId].IsAir()) return;
-
-		RestoreTimers[playerId] = (uint)config.SecondsToRestore * 60;
+		if (!config.AllowRestore || RestoreTimers.ContainsKey(guid) || !PlayerItems[guid].IsAir()) return;
+		RestoreTimers[guid] = (uint)config.SecondsToRestore * 60;
 	}
 
 	private Item[] CloneBaseLoot() => LootrUtilities.DeepCloneItems(_baseLoot);

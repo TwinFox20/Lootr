@@ -17,13 +17,15 @@ public class LootrSystem : ModSystem
 
 	public override void PostWorldGen()
 	{
-		for (ushort i = 0; i < Main.maxChests; i++)
+		for (var i = 0; i < Main.maxChests; i++)
 		{
 			var chest = Main.chest[i];
-			if (chest != null) TryRegisterLootrChest(chest);
+			if (chest == null) continue;
+			TryRegisterLootrChest(chest);
 		}
 	}
 
+	#region NBT
 	public override void SaveWorldData(TagCompound tag)
 	{
 		var serializedChests = new List<TagCompound>();
@@ -47,20 +49,21 @@ public class LootrSystem : ModSystem
 			LootrChests[position] = LootrChest.Load(chestTag);
 		}
 	}
+	#endregion
 
-	public static bool TryGetLootrChest(int chestIndex, out Chest chest, out LootrChest lootrChest)
+	public static void GetLootrChest(int chestIndex, out Chest chest, out LootrChest lootrChest)
 	{
-		lootrChest = null;
 		chest = Main.chest[chestIndex];
-		return chest != null && LootrChests.TryGetValue(new Point16(chest.x, chest.y), out lootrChest);
+		if (chest == null) throw new ArgumentNullException(nameof(chest));
+		LootrChests.TryGetValue(new Point16(chest.x, chest.y), out lootrChest);
 	}
 
 	public static void HandleChestOpened(int chestIndex, int player)
 	{
 		if (!Main.dedServ && Main.netMode != NetmodeID.SinglePlayer) return;
-		if (LootrConfig.Instance.Debug) Console.WriteLine($"Chest '{chestIndex}' was opened by player '{player}'\n");
-
-		if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest)) return;
+		if (LootrConfig.Instance.Debug)
+			Console.WriteLine($"Chest '{chestIndex}' was opened by player '{player}'\n");
+		GetLootrChest(chestIndex, out var chest, out var lootrChest);
 		var guid = UniquePlayerLib.GetGuid(player);
 		lootrChest.HandleChestOpened(chest, guid);
 	}
@@ -68,7 +71,7 @@ public class LootrSystem : ModSystem
 	public static void HandleChestClosed(int chestIndex, int player)
 	{
 		if (!Main.dedServ && Main.netMode != NetmodeID.SinglePlayer) return;
-		if (!TryGetLootrChest(chestIndex, out var chest, out var lootrChest)) return;
+		GetLootrChest(chestIndex, out var chest, out var lootrChest);
 		var guid = UniquePlayerLib.GetGuid(player);
 		lootrChest.HandleChestClosed(chest, guid);
 	}
